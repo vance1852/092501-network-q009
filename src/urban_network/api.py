@@ -31,5 +31,5 @@ class Handler(BaseHTTPRequestHandler):
         except PermissionError as e:return self._send(403,{"error":str(e)})
         except Exception as e:return self._send(400,{"error":str(e)})
 def main():
-    p=argparse.ArgumentParser(); p.add_argument("--database",default=":memory:"); p.add_argument("--host",default="127.0.0.1"); p.add_argument("--port",type=int,default=8080); a=p.parse_args(); Handler.service=NetworkService(a.database); Handler.service.bootstrap(); ThreadingHTTPServer((a.host,a.port),Handler).serve_forever()
+    p=argparse.ArgumentParser(); p.add_argument("--database",default=":memory:"); p.add_argument("--host",default="127.0.0.1"); p.add_argument("--port",type=int,default=8080); p.add_argument("--dedup-window-seconds",type=int,default=900); a=p.parse_args(); Handler.service=NetworkService(a.database,dedup_window_seconds=a.dedup_window_seconds); Handler.service.bootstrap(); ThreadingHTTPServer((a.host,a.port),Handler).serve_forever()
 if __name__=="__main__":main()

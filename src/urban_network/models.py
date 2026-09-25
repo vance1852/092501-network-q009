@@ -11,6 +11,10 @@ def parse_time(value: str) -> datetime:
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     return (parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)).astimezone(timezone.utc)
 
+def normalize_time(value: str) -> str:
+    """把任意带偏移的时间字符串规范化为同一时刻的规范 UTC 形式。"""
+    return parse_time(value).isoformat()
+
 @dataclass(frozen=True)
 class Segment:
     segment_id: str; district: str; network_type: str; length_m: float; criticality: int; status: str = "normal"

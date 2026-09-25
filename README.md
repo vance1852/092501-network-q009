@@ -42,3 +42,7 @@ PYTHONPATH=src python3 -m urban_network.api --database network.sqlite3 --host 12
 ```
 
 `GET /health` 返回服务状态，其余接口使用 JSON 和 `Authorization: Bearer <token>` 会话，支持管段登记、读数上报、风险查询、工单创建和应急资源分配。
+
+## 告警去重
+
+读数的 `observed_at` 在上报时规范化为 UTC，告警指纹由管段、传感器、异常类型和规范化首次出现时刻构成。同一管段、传感器和异常类型在去重窗口内（默认 900 秒，可用 `--dedup-window-seconds` 调整）的重复事件会合并到同一条未结告警，保留首次与末次出现时刻、重复次数和全部来源读数编号；窗口之外的新异常独立成案。同一告警只保留一张未结工单，乱序重放和并发上报不会重复派单。风险报告和审计事件均包含上述合并依据。
