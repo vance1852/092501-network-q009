@@ -11,6 +11,10 @@ def parse_time(value: str) -> datetime:
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     return (parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)).astimezone(timezone.utc)
 
+def normalize_instant(value: str) -> str:
+    """把任意带偏移的时间字符串规范化为 UTC ISO 形式，使同一时刻的不同写法得到同一身份。"""
+    return parse_time(value).isoformat()
+
 @dataclass(frozen=True)
 class Segment:
     segment_id: str; district: str; network_type: str; length_m: float; criticality: int; status: str = "normal"
@@ -26,6 +30,9 @@ class Reading:
         if not self.reading_id.strip() or not self.segment_id.strip() or not self.sensor_id.strip(): raise ValueError("reading identifiers are required")
         if min(self.pressure_kpa, self.flow_lps, self.acoustic_db) < 0: raise ValueError("reading values cannot be negative")
         parse_time(self.observed_at)
+    def identity(self) -> str:
+        """稳定的读数身份：管段、传感器与规范化观测时刻，与时区写法无关。"""
+        return f"{self.segment_id}|{self.sensor_id}|{normalize_instant(self.observed_at)}"
 
 def as_dict(value: Any) -> dict[str, Any]:
     return {name: getattr(value, name) for name in value.__dataclass_fields__} if hasattr(value, "__dataclass_fields__") else dict(value)
